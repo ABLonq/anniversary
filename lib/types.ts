@@ -5,5 +5,6 @@ export interface MemoryCard {
   meaning: string
   imageUrl: string
   imagePublicId: string
+  photos: string[]
   createdAt: string
 }
