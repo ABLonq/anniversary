@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title, date, meaning, imageUrl, imagePublicId } = body
+    const { title, date, meaning, imageUrl, imagePublicId, photos } = body
 
     if (!title || !date || !meaning || !imageUrl) {
       return NextResponse.json({ error: 'Tüm alanlar zorunludur' }, { status: 400 })
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       meaning,
       imageUrl,
       imagePublicId,
+      photos: photos || [],
       createdAt: new Date().toISOString(),
     }
 
