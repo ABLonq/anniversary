@@ -85,4 +85,115 @@ export default function CreateCardModal({ onClose, onCreated }: Props) {
     borderRadius: '10px',
     padding: '12px 16px',
     color: '#5a3e3e',
-    fontSize: '0.9
+    fontSize: '0.95rem',
+    fontFamily: 'Lato, sans-serif',
+  }
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: '6px',
+    color: '#c9a84c',
+    fontSize: '0.75rem',
+    letterSpacing: '0.1em',
+    fontFamily: 'Lato, sans-serif',
+    fontWeight: 700,
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop" onClick={onClose}>
+      <div
+        className="w-full max-w-md fade-in"
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: 'rgba(253, 246, 236, 0.97)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          border: '1px solid rgba(201, 168, 76, 0.3)',
+          padding: '2rem',
+          boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+        }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="font-display" style={{ fontSize: '1.8rem', color: '#5a3e3e', fontWeight: 400 }}>
+            Yeni Anı ♡
+          </h2>
+          <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#c9a0a0', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <div>
+            <label style={labelStyle}>FOTOĞRAFLAR ({photos.length}/3)</label>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+              {photos.map((p, i) => (
+                <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '10px', overflow: 'hidden' }}>
+                  <img src={p.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button
+                    onClick={() => removePhoto(i)}
+                    style={{
+                      position: 'absolute', top: '4px', right: '4px',
+                      background: 'rgba(90,62,62,0.7)', border: 'none',
+                      borderRadius: '50%', width: '22px', height: '22px',
+                      color: '#fff', fontSize: '0.7rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >✕</button>
+                </div>
+              ))}
+              {photos.length < 3 && (
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  style={{
+                    aspectRatio: '1',
+                    border: '2px dashed rgba(201, 168, 76, 0.4)',
+                    borderRadius: '10px',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', background: 'rgba(253, 232, 232, 0.3)',
+                    color: '#c9a84c', fontSize: '1.5rem',
+                  }}
+                >
+                  <span>+</span>
+                  <span style={{ fontSize: '0.65rem', marginTop: '2px', letterSpacing: '0.05em' }}>EKLE</span>
+                </div>
+              )}
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleFiles} style={{ display: 'none' }} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>BAŞLIK</label>
+            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Bu günün başlığı..." style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>TARİH</label>
+            <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+          </div>
+
+          <div>
+            <label style={labelStyle}>ANLAM & ÖNEMİ</label>
+            <textarea value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="Bu gün senin için ne ifade ediyor?..." rows={4} style={{ ...inputStyle, resize: 'none', lineHeight: 1.6 }} />
+          </div>
+
+          {error && <p style={{ color: '#c27070', fontSize: '0.85rem', fontFamily: 'Lato' }}>{error}</p>}
+
+          <button
+            onClick={handleSubmit}
+            disabled={uploading}
+            className="gold-shimmer font-body"
+            style={{
+              borderRadius: '12px', padding: '14px', color: '#fff',
+              fontSize: '0.9rem', letterSpacing: '0.1em', fontWeight: 700,
+              cursor: uploading ? 'not-allowed' : 'pointer', border: 'none',
+              opacity: uploading ? 0.7 : 1, marginTop: '0.5rem',
+            }}
+          >
+            {uploading ? '💫 Yükleniyor...' : '✦ ANI KAYDET'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
