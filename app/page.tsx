@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import PasswordScreen from '@/components/PasswordScreen'
 import MemoryGallery from '@/components/MemoryGallery'
@@ -10,7 +10,7 @@ const NFC_TOKEN = 'nfc_anniversary_love'
 const CORRECT_PASSWORD = '23.04.2025'
 const SESSION_KEY = 'anniversary_auth'
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams()
   const [authenticated, setAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -51,5 +51,17 @@ export default function Home() {
         <PasswordScreen onAuth={handleAuth} />
       )}
     </>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fdf6ec' }}>
+        <div className="text-2xl animate-pulse" style={{ color: '#c9a84c' }}>✦</div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   )
 }
