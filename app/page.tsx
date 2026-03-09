@@ -1,7 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import PasswordScreen from '@/components/PasswordScreen'
 import MemoryGallery from '@/components/MemoryGallery'
 import PetalBackground from '@/components/PetalBackground'
@@ -10,20 +9,20 @@ const NFC_TOKEN = 'nfc_anniversary_love'
 const CORRECT_PASSWORD = '23.04.2025'
 const SESSION_KEY = 'anniversary_auth'
 
-function HomeContent() {
-  const searchParams = useSearchParams()
+export default function Home() {
   const [authenticated, setAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const nfcParam = searchParams.get('nfc')
+    const params = new URLSearchParams(window.location.search)
+    const nfcParam = params.get('nfc')
     const sessionAuth = sessionStorage.getItem(SESSION_KEY)
 
     if (nfcParam === NFC_TOKEN || sessionAuth === 'true') {
       setAuthenticated(true)
     }
     setLoading(false)
-  }, [searchParams])
+  }, [])
 
   const handleAuth = (password: string) => {
     if (password === CORRECT_PASSWORD) {
@@ -37,7 +36,7 @@ function HomeContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#fdf6ec' }}>
-        <div className="text-gold text-2xl font-display animate-pulse">✦</div>
+        <div className="text-2xl animate-pulse" style={{ color: '#c9a84c' }}>✦</div>
       </div>
     )
   }
@@ -51,17 +50,5 @@ function HomeContent() {
         <PasswordScreen onAuth={handleAuth} />
       )}
     </>
-  )
-}
-
-export default function Home() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#fdf6ec' }}>
-        <div className="text-2xl animate-pulse" style={{ color: '#c9a84c' }}>✦</div>
-      </div>
-    }>
-      <HomeContent />
-    </Suspense>
   )
 }
