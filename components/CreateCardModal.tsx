@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { MemoryCard } from '@/lib/types'
 
 // !! Buraya kendi Cloudinary bilgilerini gir
-const CLOUDINARY_CLOUD_NAME = 'YOUR_CLOUD_NAME'
+const CLOUDINARY_CLOUD_NAME = 'dfkran2o4'
 const CLOUDINARY_UPLOAD_PRESET = 'anniversary_unsigned'
 
 interface Props {
