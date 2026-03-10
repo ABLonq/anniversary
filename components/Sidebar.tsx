@@ -7,6 +7,7 @@ interface Props {
   active: Category
   counts: Record<string, number>
   onChange: (cat: Category) => void
+  onExpandChange?: (expanded: boolean) => void
 }
 
 const CATEGORIES = [
@@ -18,9 +19,14 @@ const CATEGORIES = [
   { id: 'kutlamalar' as Category, label: 'Kutlamalar', icon: '🎉' },
 ]
 
-export default function Sidebar({ active, counts, onChange }: Props) {
+export default function Sidebar({ active, counts, onChange, onExpandChange }: Props) {
   const [expanded, setExpanded] = useState(true)
 
+  const toggle = (val: boolean) => {
+    setExpanded(val)
+    onExpandChange?.(val)
+  }
+  
   return (
     <>
       
