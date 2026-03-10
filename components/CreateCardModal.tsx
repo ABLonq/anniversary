@@ -112,6 +112,8 @@ export default function CreateCardModal({ onClose, onCreated }: Props) {
           padding: '2rem',
           boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
           maxHeight: '90vh',
+          overflowY: 'scroll',
+          scrollbarWidth: 'none' as const,
           overflowY: 'auto',
         }}
       >
