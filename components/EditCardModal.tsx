@@ -87,6 +87,8 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
         borderRadius: '24px', border: '1px solid rgba(201, 168, 76, 0.3)',
         padding: '2rem', boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
         maxHeight: '90vh', overflowY: 'auto',
+        overflowY: 'scroll',
+        scrollbarWidth: 'none' as const,
       }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display" style={{ fontSize: '1.8rem', color: '#5a3e3e', fontWeight: 400 }}>Anıyı Düzenle ✦</h2>
