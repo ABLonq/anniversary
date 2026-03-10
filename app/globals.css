@@ -27,7 +27,6 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(201, 168, 76, 0.25); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(201, 168, 76, 0.45); }
 ```
 
 Ayrıca `CreateCardModal.tsx` ve `EditCardModal.tsx` dosyalarında modal div'inin style'ında `overflowY: 'auto'` olan satırı şununla değiştir:
