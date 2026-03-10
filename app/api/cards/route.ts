@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       imageUrl,
       imagePublicId,
       photos: photos || [],
+      category: category || 'onemli-anilar',
       createdAt: new Date().toISOString(),
     }
 
