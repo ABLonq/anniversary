@@ -86,8 +86,8 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
         background: 'rgba(253, 246, 236, 0.97)', backdropFilter: 'blur(20px)',
         borderRadius: '24px', border: '1px solid rgba(201, 168, 76, 0.3)',
         padding: '2rem', boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
-        maxHeight: '90vh', overflowY: 'auto',
-        overflowY: 'scroll',
+        maxHeight: '90vh',
+        overflowY: 'auto' as const,
         scrollbarWidth: 'none' as const,
       }}>
         <div className="flex items-center justify-between mb-6">
