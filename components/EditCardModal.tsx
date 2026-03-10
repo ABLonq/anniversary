@@ -1,10 +1,18 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { MemoryCard } from '@/lib/types'
+import { MemoryCard, Category } from '@/lib/types'
 
 const CLOUDINARY_CLOUD_NAME = 'dfkran2o4'
 const CLOUDINARY_UPLOAD_PRESET = 'anniversary_unsigned'
+
+const CATEGORIES = [
+  { id: 'gezdigimiz-yerler' as Category, label: 'Gezdiğimiz Yerler', icon: '🗺️' },
+  { id: 'onemli-anilar' as Category, label: 'Önemli Anılar', icon: '⭐' },
+  { id: 'romantik-anlar' as Category, label: 'Romantik Anlar', icon: '♡' },
+  { id: 'ilk-kezler' as Category, label: 'İlk Kez\'ler', icon: '🌸' },
+  { id: 'kutlamalar' as Category, label: 'Kutlamalar', icon: '🎉' },
+]
 
 interface Props {
   card: MemoryCard
@@ -16,9 +24,7 @@ async function uploadToCloudinary(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET)
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-    method: 'POST', body: formData
-  })
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData })
   const data = await res.json()
   if (!data.secure_url) throw new Error('Fotoğraf yüklenemedi')
   return data.secure_url
@@ -28,6 +34,7 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
   const [title, setTitle] = useState(card.title)
   const [date, setDate] = useState(card.date)
   const [meaning, setMeaning] = useState(card.meaning)
+  const [category, setCategory] = useState<Category>(card.category || 'onemli-anilar')
   const [existingPhotos, setExistingPhotos] = useState<string[]>(card.photos?.length ? card.photos : [card.imageUrl])
   const [newPhotos, setNewPhotos] = useState<{ file: File; preview: string }[]>([])
   const [uploading, setUploading] = useState(false)
@@ -38,8 +45,7 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
 
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    const remaining = 3 - totalPhotos
-    files.slice(0, remaining).forEach(file => {
+    files.slice(0, 3 - totalPhotos).forEach(file => {
       const reader = new FileReader()
       reader.onload = () => setNewPhotos(prev => [...prev, { file, preview: reader.result as string }])
       reader.readAsDataURL(file)
@@ -59,10 +65,10 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
       const res = await fetch(`/api/cards/${card.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, date, meaning, imageUrl: allPhotos[0], photos: allPhotos }),
+        body: JSON.stringify({ title, date, meaning, category, imageUrl: allPhotos[0], photos: allPhotos }),
       })
       if (!res.ok) throw new Error('Kart güncellenemedi')
-      onUpdated({ ...card, title, date, meaning, imageUrl: allPhotos[0], photos: allPhotos })
+      onUpdated({ ...card, title, date, meaning, category, imageUrl: allPhotos[0], photos: allPhotos })
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Bir hata oluştu')
     } finally {
@@ -77,7 +83,7 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
   }
   const labelStyle = {
     display: 'block', marginBottom: '6px', color: '#c9a84c',
-    fontSize: '0.75rem', letterSpacing: '0.1em', fontFamily: 'Lato, sans-serif', fontWeight: 700,
+    fontSize: '0.75rem', letterSpacing: '0.1em', fontFamily: 'Lato, sans-serif', fontWeight: 700 as const,
   }
 
   return (
@@ -86,9 +92,7 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
         background: 'rgba(253, 246, 236, 0.97)', backdropFilter: 'blur(20px)',
         borderRadius: '24px', border: '1px solid rgba(201, 168, 76, 0.3)',
         padding: '2rem', boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
-        maxHeight: '90vh',
-        overflowY: 'auto' as const,
-        scrollbarWidth: 'none' as const,
+        maxHeight: '90vh', overflowY: 'auto' as const, scrollbarWidth: 'none' as const,
       }}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display" style={{ fontSize: '1.8rem', color: '#5a3e3e', fontWeight: 400 }}>Anıyı Düzenle ✦</h2>
@@ -96,6 +100,22 @@ export default function EditCardModal({ card, onClose, onUpdated }: Props) {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+          <div>
+            <label style={labelStyle}>KATEGORİ</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {CATEGORIES.map(cat => (
+                <button key={cat.id} onClick={() => setCategory(cat.id)} style={{
+                  padding: '7px 14px', borderRadius: '20px', cursor: 'pointer',
+                  fontFamily: 'Lato', fontSize: '0.8rem', fontWeight: category === cat.id ? 700 : 400,
+                  border: `1px solid ${category === cat.id ? '#c9a84c' : 'rgba(201,168,76,0.25)'}`,
+                  background: category === cat.id ? 'rgba(201,168,76,0.12)' : 'transparent',
+                  color: category === cat.id ? '#5a3e3e' : '#a07070',
+                  transition: 'all 0.2s',
+                }}>{cat.icon} {cat.label}</button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label style={labelStyle}>FOTOĞRAFLAR ({totalPhotos}/3)</label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
