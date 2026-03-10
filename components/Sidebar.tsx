@@ -23,23 +23,7 @@ export default function Sidebar({ active, counts, onChange }: Props) {
 
   return (
     <>
-      {/* Mobile toggle */}
-      <button
-        onClick={() => setExpanded(p => !p)}
-        className="lg:hidden fixed top-4 left-4 z-40"
-        style={{
-          background: 'rgba(253, 246, 236, 0.95)',
-          border: '1px solid rgba(201, 168, 76, 0.3)',
-          borderRadius: '12px',
-          padding: '10px 14px',
-          color: '#c9a84c',
-          cursor: 'pointer',
-          fontSize: '1rem',
-          boxShadow: '0 4px 20px rgba(201, 168, 76, 0.15)',
-        }}
-      >
-        {expanded ? '✕' : '☰'}
-      </button>
+      
 
       {/* Sidebar */}
       <aside style={{
