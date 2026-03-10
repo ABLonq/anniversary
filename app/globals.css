@@ -23,11 +23,25 @@ body {
   color: #5a3e3e;
   overflow-x: hidden;
 }
-
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--petal); }
-::-webkit-scrollbar-thumb { background: var(--gold-light); border-radius: 3px; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201, 168, 76, 0.25); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(201, 168, 76, 0.45); }
+```
+
+Ayrıca `CreateCardModal.tsx` ve `EditCardModal.tsx` dosyalarında modal div'inin style'ında `overflowY: 'auto'` olan satırı şununla değiştir:
+
+**Bul:**
+```
+overflowY: 'auto',
+```
+
+**Şununla değiştir:**
+```
+overflowY: 'auto',
+scrollbarWidth: 'thin' as const,
+borderRadius: '24px',
 
 /* Petals bg */
 .petal-bg {
