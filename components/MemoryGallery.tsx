@@ -57,7 +57,7 @@ export default function MemoryGallery() {
   const filtered = activeCategory === 'tumü' ? cards : cards.filter(c => c.category === activeCategory)
 
   return (
-    <div className="flex min-h-screen">
+    <div style={{ minHeight: '100vh' }}>
       <Sidebar active={activeCategory} counts={counts} onChange={setActiveCategory} onExpandChange={setSidebarOpen} />
 
       <div className="flex-1 relative z-10" style={{ marginLeft: sidebarOpen ? '240px' : '0px', transition: 'margin-left 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
