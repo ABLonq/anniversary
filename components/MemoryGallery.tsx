@@ -14,6 +14,7 @@ export default function MemoryGallery() {
   const [editCard, setEditCard] = useState<MemoryCard | null>(null)
   const [selectedCard, setSelectedCard] = useState<MemoryCard | null>(null)
   const [activeCategory, setActiveCategory] = useState<Category>('tumü')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
 
   const fetchCards = async () => {
     try {
@@ -57,9 +58,9 @@ export default function MemoryGallery() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar active={activeCategory} counts={counts} onChange={setActiveCategory} />
+      <Sidebar active={activeCategory} counts={counts} onChange={setActiveCategory} onExpandChange={setSidebarOpen} />
 
-      <div className="flex-1 relative z-10 lg:ml-[240px]">
+      <div className="flex-1 relative z-10" style={{ marginLeft: sidebarOpen ? '240px' : '0px', transition: 'margin-left 0.35s cubic-bezier(0.4,0,0.2,1)' }}>
         <header className="text-center pt-14 pb-8 px-4 fade-in">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div style={{ width: '60px', height: '1px', background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
