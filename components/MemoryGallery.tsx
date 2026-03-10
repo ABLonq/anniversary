@@ -59,7 +59,7 @@ export default function MemoryGallery() {
     <div className="flex min-h-screen">
       <Sidebar active={activeCategory} counts={counts} onChange={setActiveCategory} />
 
-      <div className="flex-1 relative z-10" style={{ marginLeft: '240px' }}>
+      <div className="flex-1 relative z-10 lg:ml-[240px]">
         <header className="text-center pt-14 pb-8 px-4 fade-in">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div style={{ width: '60px', height: '1px', background: 'linear-gradient(to right, transparent, #c9a84c)' }} />
