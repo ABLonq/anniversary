@@ -112,9 +112,8 @@ export default function CreateCardModal({ onClose, onCreated }: Props) {
           padding: '2rem',
           boxShadow: '0 30px 80px rgba(90, 62, 62, 0.25)',
           maxHeight: '90vh',
-          overflowY: 'scroll',
+          overflowY: 'auto' as const,
           scrollbarWidth: 'none' as const,
-          overflowY: 'auto',
         }}
       >
         <div className="flex items-center justify-between mb-6">
