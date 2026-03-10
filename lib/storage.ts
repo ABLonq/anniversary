@@ -21,9 +21,7 @@ export async function initDB() {
       created_at TEXT NOT NULL
     )
   `
-  await sql`
-    ALTER TABLE cards ADD COLUMN IF NOT EXISTS photos TEXT[] DEFAULT '{}'
-  `
+  await sql`ALTER TABLE cards ADD COLUMN IF NOT EXISTS photos TEXT[] DEFAULT '{}'`
 }
 
 export async function getCards(): Promise<MemoryCard[]> {
@@ -48,6 +46,19 @@ export async function saveCard(card: MemoryCard): Promise<void> {
   await sql`
     INSERT INTO cards (id, title, date, meaning, image_url, image_public_id, photos, created_at)
     VALUES (${card.id}, ${card.title}, ${card.date}, ${card.meaning}, ${card.imageUrl}, ${card.imagePublicId}, ${card.photos}, ${card.createdAt})
+  `
+}
+
+export async function updateCard(id: string, data: Partial<MemoryCard>): Promise<void> {
+  const sql = getSQL()
+  await sql`
+    UPDATE cards SET
+      title = COALESCE(${data.title ?? null}, title),
+      date = COALESCE(${data.date ?? null}, date),
+      meaning = COALESCE(${data.meaning ?? null}, meaning),
+      image_url = COALESCE(${data.imageUrl ?? null}, image_url),
+      photos = COALESCE(${data.photos ?? null}, photos)
+    WHERE id = ${id}
   `
 }
 
