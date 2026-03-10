@@ -24,22 +24,6 @@ body {
   overflow-x: hidden;
 }
 
-```
-
-Ayrıca `CreateCardModal.tsx` ve `EditCardModal.tsx` dosyalarında modal div'inin style'ında `overflowY: 'auto'` olan satırı şununla değiştir:
-
-**Bul:**
-```
-overflowY: 'auto',
-```
-
-**Şununla değiştir:**
-```
-overflowY: 'auto',
-scrollbarWidth: 'thin' as const,
-borderRadius: '24px',
-
-/* Petals bg */
 .petal-bg {
   position: fixed;
   top: 0; left: 0;
@@ -64,21 +48,19 @@ borderRadius: '24px',
   100% { transform: translateY(105vh) rotate(720deg) translateX(40px); opacity: 0; }
 }
 
-/* Gold border */
 .gold-border {
   border: 1px solid var(--gold-light);
 }
 
-/* Card hover */
 .memory-card {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
 .memory-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(201, 168, 76, 0.2);
 }
 
-/* Shimmer on gold */
 .gold-shimmer {
   background: linear-gradient(135deg, #c9a84c 0%, #e8d5a3 50%, #c9a84c 100%);
   background-size: 200% 200%;
@@ -91,20 +73,17 @@ borderRadius: '24px',
   100% { background-position: 0% 50%; }
 }
 
-/* Input focus */
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--gold) !important;
   box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
 }
 
-/* Modal backdrop */
 .modal-backdrop {
   backdrop-filter: blur(8px);
   background: rgba(90, 62, 62, 0.4);
 }
 
-/* Fade animations */
 .fade-in {
   animation: fadeIn 0.8s ease forwards;
 }
