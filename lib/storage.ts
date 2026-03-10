@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless'
-import { MemoryCard } from './types'
+import { MemoryCard, Category } from './types'
 
 function getSQL() {
   const url = process.env.DATABASE_URL || process.env.POSTGRES_URL
@@ -38,7 +38,7 @@ export async function getCards(): Promise<MemoryCard[]> {
     imageUrl: row.image_url as string,
     imagePublicId: row.image_public_id as string,
     photos: (row.photos as string[]) || [],
-    category: (row.category as string) || 'onemli-anilar',
+    category: ((row.category as string) || 'onemli-anilar') as Category,
     createdAt: row.created_at as string,
   }))
 }
