@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import PasswordScreen from '@/components/PasswordScreen'
 import MemoryGallery from '@/components/MemoryGallery'
 import PetalBackground from '@/components/PetalBackground'
+import CornerCharacters from '@/components/CornerCharacters'
 
 const NFC_TOKEN = 'nfc_anniversary_love'
 const CORRECT_PASSWORD = '23.04.2025'
@@ -17,7 +18,6 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search)
     const nfcParam = params.get('nfc')
     const sessionAuth = sessionStorage.getItem(SESSION_KEY)
-
     if (nfcParam === NFC_TOKEN || sessionAuth === 'true') {
       setAuthenticated(true)
     }
@@ -44,6 +44,7 @@ export default function Home() {
   return (
     <>
       <PetalBackground />
+      <CornerCharacters />
       {authenticated ? (
         <MemoryGallery />
       ) : (
