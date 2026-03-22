@@ -250,9 +250,13 @@ export default function MiniGame() {
         <div style={{ padding: '14px', overflowY: 'auto', scrollbarWidth: 'none' as const, flex: 1 }}>
           {message && (
             <div style={{
-              background: 'rgba(201,168,76,0.12)', border: '1px solid rgba(201,168,76,0.3)',
-              borderRadius: '10px', padding: '8px 12px', marginBottom: '12px', textAlign: 'center',
+              position: 'fixed', bottom: '100px', right: '20px', zIndex: 9998,
+              background: 'rgba(253, 246, 236, 0.97)', backdropFilter: 'blur(10px)',
+              border: '1px solid rgba(201, 168, 76, 0.3)', borderRadius: '14px',
+              padding: '10px 16px', boxShadow: '0 4px 20px rgba(201,168,76,0.2)',
               fontFamily: 'Lato', fontSize: '0.8rem', color: '#5a3e3e',
+              animation: 'floatUp 2.5s ease forwards',
+              pointerEvents: 'none', whiteSpace: 'nowrap',
             }}>{message}</div>
           )}
 
