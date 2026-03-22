@@ -310,7 +310,7 @@ useEffect(() => {
           </div>
 
           <p style={{ textAlign: 'center', fontFamily: 'Lato', fontSize: '0.65rem', color: '#c9a0a0', marginTop: '12px' }}>
-            ♡ karakterlere tıklayarak okşayabilirsin
+            ♡ Çocuklara tıklayarak okşayabilirsin
           </p>
         </div>
       </div>
