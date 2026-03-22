@@ -14,8 +14,8 @@ interface Pet {
 const FOODS = ['🍎', '🍓', '🌿', '🍪', '🍰', '🥕']
 const GAMES = ['🎾', '🪀', '🎈', '⭐', '🌸']
 
-const DEFAULT_KOALA: Pet = { name: 'Koala', emoji: '🐨', hunger: 70, happiness: 80, energy: 90, animation: '' }
-const DEFAULT_FROG: Pet = { name: 'Kurbağa', emoji: '🐸', hunger: 60, happiness: 75, energy: 85, animation: '' }
+const DEFAULT_KOALA: Pet = { name: 'Gakgak', emoji: '🐨', hunger: 70, happiness: 80, energy: 90, animation: '' }
+const DEFAULT_FROG: Pet = { name: 'Pırtpırt', emoji: '🐸', hunger: 60, happiness: 75, energy: 85, animation: '' }
 
 function getMood(pet: Pet) {
   const avg = (pet.hunger + pet.happiness + pet.energy) / 3
