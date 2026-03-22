@@ -130,7 +130,7 @@ useEffect(() => {
     const interval = setInterval(() => {
       setKoala(p => ({ ...p, hunger: Math.max(0, p.hunger - 1), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
       setFrog(p => ({ ...p, hunger: Math.max(0, p.hunger - 1), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
-    }, 60000)
+    }, 480000)
     return () => clearInterval(interval)
   }, [])
 
