@@ -99,13 +99,27 @@ export default function MiniGame() {
   }
 
   useEffect(() => {
-    if (!open) return
+    const saved = localStorage.getItem('minigame_pets')
+    if (saved) {
+      const { koalaData, frogData, lastSeen } = JSON.parse(saved)
+      const minutesPassed = (Date.now() - lastSeen) / 1000 / 60
+      const decay = Math.floor(minutesPassed * 0.5)
+      setKoala({ ...koalaData, hunger: Math.max(0, koalaData.hunger - decay), happiness: Math.max(0, koalaData.happiness - decay), energy: Math.max(0, koalaData.energy - decay), animation: '' })
+      setFrog({ ...frogData, hunger: Math.max(0, frogData.hunger - decay), happiness: Math.max(0, frogData.happiness - decay), energy: Math.max(0, frogData.energy - decay), animation: '' })
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('minigame_pets', JSON.stringify({ koalaData: koala, frogData: frog, lastSeen: Date.now() }))
+  }, [koala, frog])
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      setKoala(p => ({ ...p, hunger: Math.max(0, p.hunger - 2), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
-      setFrog(p => ({ ...p, hunger: Math.max(0, p.hunger - 2), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
-    }, 15000)
+      setKoala(p => ({ ...p, hunger: Math.max(0, p.hunger - 1), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
+      setFrog(p => ({ ...p, hunger: Math.max(0, p.hunger - 1), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
+    }, 30000)
     return () => clearInterval(interval)
-  }, [open])
+  }, [])
 
   const Bar = ({ value, color }: { value: number; color: string }) => (
     <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.08)', borderRadius: '3px', overflow: 'hidden' }}>
