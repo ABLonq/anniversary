@@ -244,8 +244,8 @@ useEffect(() => {
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
       }}>
         <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid rgba(201,168,76,0.15)', textAlign: 'center' }}>
-          <p style={{ color: '#c9a84c', fontSize: '0.65rem', letterSpacing: '0.15em', fontFamily: 'Lato', fontWeight: 700 }}>✦ MİNİ OYUN ✦</p>
-          <p style={{ color: '#a07070', fontSize: '0.75rem', fontFamily: 'Lato', marginTop: '2px' }}>Karakterlere tıklayarak okşa!</p>
+          <p style={{ color: '#c9a84c', fontSize: '0.65rem', letterSpacing: '0.15em', fontFamily: 'Lato', fontWeight: 700 }}>✦ YAVRUCUKLARIMIZ ✦</p>
+          <p style={{ color: '#a07070', fontSize: '0.75rem', fontFamily: 'Lato', marginTop: '2px' }}>Çocuklara tıklayarak okşa!</p>
         </div>
 
         <div style={{ padding: '14px', overflowY: 'auto', scrollbarWidth: 'none' as const, flex: 1 }}>
