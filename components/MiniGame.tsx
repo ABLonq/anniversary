@@ -136,7 +136,7 @@ useEffect(() => {
 
   const showMessage = (msg: string) => {
     setMessage(msg)
-    setTimeout(() => setMessage(''), 2500)
+    setTimeout(() => setMessage(''), 5000)
   }
 
   const addParticle = (emoji: string, x: number, y: number) => {
