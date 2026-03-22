@@ -103,7 +103,7 @@ export default function MiniGame() {
     const interval = setInterval(() => {
       setKoala(p => ({ ...p, hunger: Math.max(0, p.hunger - 2), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
       setFrog(p => ({ ...p, hunger: Math.max(0, p.hunger - 2), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
-    }, 5000)
+    }, 15000)
     return () => clearInterval(interval)
   }, [open])
 
@@ -184,6 +184,26 @@ export default function MiniGame() {
         @keyframes floatUp { 0%{transform:translateY(0);opacity:1} 100%{transform:translateY(-60px);opacity:0} }
       `}</style>
 
+      {/* Ana sayfa bildirimi */}
+      {(koala.hunger < 30 || koala.happiness < 30 || frog.hunger < 30 || frog.happiness < 30) && !open && (
+        <div style={{
+          position: 'fixed', top: '20px', right: '60px', zIndex: 50,
+          background: 'rgba(253, 246, 236, 0.97)', backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(201, 168, 76, 0.3)', borderRadius: '14px',
+          padding: '10px 16px', boxShadow: '0 4px 20px rgba(201,168,76,0.2)',
+          display: 'flex', alignItems: 'center', gap: '8px',
+          animation: 'petBounce 1s ease infinite',
+          cursor: 'pointer',
+        }} onClick={() => setOpen(true)}>
+          <span style={{ fontSize: '1.2rem' }}>
+            {koala.hunger < 30 ? '🐨' : '🐸'}
+          </span>
+          <span style={{ fontFamily: 'Lato', fontSize: '0.8rem', color: '#5a3e3e', fontWeight: 700 }}>
+            {koala.hunger < 30 || frog.hunger < 30 ? 'Acıktım! 🍽' : 'Mutsuzum! 💔'}
+          </span>
+        </div>
+      )}
+      
       {particles.map(p => (
         <div key={p.id} style={{
           position: 'fixed', left: p.x, top: p.y, zIndex: 9999,
