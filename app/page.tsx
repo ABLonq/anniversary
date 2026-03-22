@@ -1,5 +1,6 @@
 'use client'
 
+import MiniGame from '@/components/MiniGame'
 import { useEffect, useState } from 'react'
 import PasswordScreen from '@/components/PasswordScreen'
 import MemoryGallery from '@/components/MemoryGallery'
@@ -45,6 +46,7 @@ export default function Home() {
     <>
       <PetalBackground />
       <CornerCharacters />
+      <MiniGame />
       {authenticated ? (
         <MemoryGallery />
       ) : (
