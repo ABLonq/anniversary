@@ -227,7 +227,7 @@ useEffect(() => {
         boxShadow: '-4px 0 20px rgba(201, 168, 76, 0.15)',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
       }}>
-        <span style={{ writingMode: 'vertical-rl', fontSize: '1.1rem' }}>🐨&🐸</span>
+        <span style={{ writingMode: 'vertical-rl', fontSize: '1.1rem' }}>🐨|🐸</span>
         {!open && <span style={{ writingMode: 'vertical-rl', fontSize: '0.65rem', color: '#c9a84c', fontFamily: 'Lato', fontWeight: 700, letterSpacing: '0.1em' }}>ÇOCUKLAR</span>}
       </button>
 
