@@ -217,8 +217,7 @@ export default function MiniGame() {
 
       {/* Açma butonu */}
       <button onClick={() => setOpen(p => !p)} style={{
-        position: 'fixed', right: 0, top: '35%',
-        transform: 'translateY(-50%)',
+        position: 'fixed', right: 0, top: '20px',
         background: 'rgba(253, 246, 236, 0.95)',
         border: '1px solid rgba(201, 168, 76, 0.3)',
         borderRight: 'none', borderRadius: '12px 0 0 12px',
