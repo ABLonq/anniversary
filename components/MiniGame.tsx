@@ -106,24 +106,26 @@ export default function MiniGame() {
   const [particles, setParticles] = useState<{ id: number; x: number; y: number; emoji: string }[]>([])
   const [particleId, setParticleId] = useState(0)
 
-  // localStorage - sadece client'ta çalışır
   useEffect(() => {
-    const saved = localStorage.getItem('minigame_pets')
-    if (saved) {
-      try {
-        const { koalaData, frogData, lastSeen } = JSON.parse(saved)
-        const minutesPassed = (Date.now() - lastSeen) / 1000 / 60
-        const decay = Math.floor(minutesPassed * 0.5)
-        setKoala({ ...koalaData, hunger: Math.max(0, koalaData.hunger - decay), happiness: Math.max(0, koalaData.happiness - decay), energy: Math.max(0, koalaData.energy - decay), animation: '' })
-        setFrog({ ...frogData, hunger: Math.max(0, frogData.hunger - decay), happiness: Math.max(0, frogData.happiness - decay), energy: Math.max(0, frogData.energy - decay), animation: '' })
-      } catch {}
-    }
-  }, [])
+  fetch('/api/pets')
+    .then(r => r.json())
+    .then(data => {
+      setKoala(p => ({ ...p, ...data.koala, animation: '' }))
+      setFrog(p => ({ ...p, ...data.frog, animation: '' }))
+    })
+    .catch(() => {})
+}, [])
 
-  useEffect(() => {
-    localStorage.setItem('minigame_pets', JSON.stringify({ koalaData: koala, frogData: frog, lastSeen: Date.now() }))
-  }, [koala, frog])
-
+useEffect(() => {
+  const timer = setTimeout(() => {
+    fetch('/api/pets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ koala, frog }),
+    }).catch(() => {})
+  }, 1000)
+  return () => clearTimeout(timer)
+}, [koala, frog])
   useEffect(() => {
     const interval = setInterval(() => {
       setKoala(p => ({ ...p, hunger: Math.max(0, p.hunger - 1), happiness: Math.max(0, p.happiness - 1), energy: Math.max(0, p.energy - 1) }))
