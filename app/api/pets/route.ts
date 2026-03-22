@@ -33,7 +33,7 @@ export async function GET() {
   const rows = await sql`SELECT * FROM pet_stats WHERE id = 'main'`
   const r = rows[0]
   const minutesPassed = (Date.now() - Number(r.last_seen)) / 1000 / 60
-  const decay = Math.min(Math.floor(minutesPassed * 0.5), 50)
+  const decay = Math.min(Math.floor(minutesPassed / 8), 50)
   return NextResponse.json({
     koala: { hunger: Math.max(0, r.koala_hunger - decay), happiness: Math.max(0, r.koala_happiness - decay), energy: Math.max(0, r.koala_energy - decay) },
     frog:  { hunger: Math.max(0, r.frog_hunger - decay),  happiness: Math.max(0, r.frog_happiness - decay),  energy: Math.max(0, r.frog_energy - decay)  },
