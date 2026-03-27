@@ -10,8 +10,8 @@ const BrickGame = dynamic(() => import('./games/BrickGame'), { ssr: false })
 
 interface Pet { name: string; emoji: string; hunger: number; happiness: number; energy: number; animation: string }
 
-const DEFAULT_KOALA: Pet = { name: 'Koala', emoji: '🐨', hunger: 70, happiness: 80, energy: 90, animation: '' }
-const DEFAULT_FROG: Pet = { name: 'Kurbağa', emoji: '🐸', hunger: 60, happiness: 75, energy: 85, animation: '' }
+const DEFAULT_KOALA: Pet = { name: 'Gak Gak', emoji: '🐨', hunger: 70, happiness: 80, energy: 90, animation: '' }
+const DEFAULT_FROG: Pet = { name: 'Pırt Pırt', emoji: '🐸', hunger: 60, happiness: 75, energy: 85, animation: '' }
 
 const SHOP_FOODS = [
   { emoji: '🍎', price: 5 }, { emoji: '🍓', price: 8 }, { emoji: '🌿', price: 6 },
