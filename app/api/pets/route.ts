@@ -48,7 +48,7 @@ function getTodayStr() {
   return new Date().toISOString().split('T')[0]
 }
 
-function getDailyTasks(lastReset: string, existingTasks: unknown[]) {
+function getDailyTasks(lastReset: string, existingTasks: any[]) {
   const today = getTodayStr()
   if (lastReset === today && existingTasks.length > 0) return { tasks: existingTasks, reset: false }
   const shuffled = [...TASK_POOL].sort(() => Math.random() - 0.5)
@@ -63,10 +63,10 @@ export async function GET() {
   const r = rows[0]
   const minutesPassed = (Date.now() - Number(r.last_seen)) / 1000 / 60
   const decay = Math.min(Math.floor(minutesPassed / 8), 50)
-  const { tasks, reset } = getDailyTasks(r.last_task_reset as string, r.daily_tasks as unknown[])
+  const { tasks, reset } = getDailyTasks(r.last_task_reset as string, r.daily_tasks as any[])
   let coins = r.coins as number
   if (reset) {
-    const openTask = tasks.find((t: {id: string}) => t.id === 'open_site')
+    const openTask = tasks.find((t: any) => t.id === 'open_site')
     if (openTask) coins = Math.min(9999, coins + 10)
     await sql`UPDATE pet_stats SET daily_tasks = ${JSON.stringify(tasks)}, last_task_reset = ${getTodayStr()}, coins = ${coins} WHERE id = 'main'`
   }
