@@ -47,6 +47,7 @@ function Bar({ value, color }: { value: number; color: string }) {
 
 type Tab = 'pets' | 'tasks' | 'games' | 'shop'
 type Inventory = { foods: Record<string, number>; games: Record<string, number> }
+type Task = { id: string; label: string; desc: string; reward: number; icon: string; completed: boolean }
 
 export default function MiniGame() {
   const [open, setOpen] = useState(false)
@@ -60,18 +61,31 @@ export default function MiniGame() {
   const [particleId, setParticleId] = useState(0)
   const [coins, setCoins] = useState(30)
   const [inventory, setInventory] = useState<Inventory>({ foods: { '🍎': 2, '🥕': 1 }, games: { '🎾': 1 } })
-  const [dailyTasks, setDailyTasks] = useState<{ id: string; label: string; desc: string; reward: number; icon: string; completed: boolean }[]>([])
+  const [dailyTasks, setDailyTasks] = useState<Task[]>([])
   const [activeGame, setActiveGame] = useState<string | null>(null)
   const [gamePlayed, setGamePlayed] = useState(false)
   const petBothRef = useRef({ koala: false, frog: false })
   const feedBothRef = useRef({ koala: false, frog: false })
+  const dailyTasksRef = useRef<Task[]>([])
+
+  useEffect(() => { dailyTasksRef.current = dailyTasks }, [dailyTasks])
 
   useEffect(() => {
     fetch('/api/pets').then(r => r.json()).then(data => {
       setKoala(p => ({ ...p, ...data.koala, animation: '' }))
       setFrog(p => ({ ...p, ...data.frog, animation: '' }))
       setCoins(data.coins || 30)
-      if (data.inventory) setInventory(data.inventory)
+      if (data.inventory) {
+        const inv = data.inventory
+        // eski array formatını object formatına çevir
+        const foods = Array.isArray(inv.foods)
+          ? Object.fromEntries(inv.foods.map((f: string) => [f, 2]))
+          : inv.foods
+        const games = Array.isArray(inv.games)
+          ? Object.fromEntries(inv.games.map((g: string) => [g, 1]))
+          : inv.games
+        setInventory({ foods, games })
+      }
       if (data.dailyTasks) setDailyTasks(data.dailyTasks)
       setGamePlayed(data.gamePlayed || false)
     }).catch(() => {})
@@ -114,52 +128,57 @@ export default function MiniGame() {
   }
 
   const completeTask = useCallback(async (taskId: string) => {
-    const task = dailyTasks.find(t => t.id === taskId)
+    const tasks = dailyTasksRef.current
+    const task = tasks.find(t => t.id === taskId)
     if (!task || task.completed) return
-    const res = await fetch('/api/pets', {
+    // Önce UI güncelle
+    setDailyTasks(prev => prev.map(t => t.id === taskId ? { ...t, completed: true } : t))
+    setCoins(prev => prev + task.reward)
+    showMessage(`+${task.reward} coin kazandın! 🪙`)
+    // Arka planda API
+    fetch('/api/pets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'complete_task', taskId }),
-    })
-    const data = await res.json()
-    if (data.ok) { setCoins(data.coins); setDailyTasks(data.tasks); showMessage(`+${task.reward} coin kazandın! 🪙`) }
-  }, [dailyTasks])
+    }).catch(() => {})
+  }, [])
 
-  const feed = async (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
+  const feed = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
     const stock = inventory.foods[selectedFood] || 0
     if (stock <= 0) { showMessage('Stok bitti! Mağazadan satın al 🛒'); return }
-    const res = await fetch('/api/pets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'use_item', item: selectedFood, itemType: 'foods' }),
-    })
-    const data = await res.json()
-    if (!data.ok) { showMessage('Stok bitti! 🛒'); return }
-    setInventory(data.inventory)
+    // Önce UI güncelle
+    setInventory(prev => ({ ...prev, foods: { ...prev.foods, [selectedFood]: stock - 1 } }))
     addParticle(selectedFood, e.clientX, e.clientY)
     animatePet(setPet, 'bounce')
     setPet(p => ({ ...p, hunger: Math.min(100, p.hunger + 20), happiness: Math.min(100, p.happiness + 5), energy: Math.min(100, p.energy + 10) }))
     showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
+    // Görev takibi
     if (pet.name === 'Gak Gak') feedBothRef.current.koala = true
     else feedBothRef.current.frog = true
     if (feedBothRef.current.koala && feedBothRef.current.frog) completeTask('feed_both')
-  }
-
-  const play = async (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
-    const stock = inventory.games[selectedGame] || 0
-    if (stock <= 0) { showMessage('Stok bitti! Mağazadan satın al 🛒'); return }
-    const res = await fetch('/api/pets', {
+    // Arka planda API
+    fetch('/api/pets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'use_item', item: selectedGame, itemType: 'games' }),
-    })
-    const data = await res.json()
-    if (!data.ok) { showMessage('Stok bitti! 🛒'); return }
-    setInventory(data.inventory)
+      body: JSON.stringify({ action: 'use_item', item: selectedFood, itemType: 'foods' }),
+    }).catch(() => {})
+  }
+
+  const play = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
+    const stock = inventory.games[selectedGame] || 0
+    if (stock <= 0) { showMessage('Stok bitti! Mağazadan satın al 🛒'); return }
+    // Önce UI güncelle
+    setInventory(prev => ({ ...prev, games: { ...prev.games, [selectedGame]: stock - 1 } }))
     addParticle(selectedGame, e.clientX, e.clientY)
     animatePet(setPet, 'spin')
     setPet(p => ({ ...p, happiness: Math.min(100, p.happiness + 25), energy: Math.max(0, p.energy - 15), hunger: Math.max(0, p.hunger - 10) }))
     showMessage(`${pet.name} ${selectedGame} ile oynadı! 🎉`)
+    // Arka planda API
+    fetch('/api/pets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'use_item', item: selectedGame, itemType: 'games' }),
+    }).catch(() => {})
   }
 
   const petAction = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
@@ -185,8 +204,13 @@ export default function MiniGame() {
       body: JSON.stringify({ action: 'buy_item', item: emoji }),
     })
     const data = await res.json()
-    if (data.ok) { setCoins(data.coins); setInventory(data.inventory); showMessage(`${emoji} x3 satın alındı! 🛒`) }
-    else showMessage(data.error === 'Not enough coins' ? 'Yeterli coin yok! 🪙' : 'Bir hata oluştu')
+    if (data.ok) {
+      setCoins(data.coins)
+      setInventory(data.inventory)
+      showMessage(`${emoji} x3 satın alındı! 🛒`)
+    } else {
+      showMessage(data.error === 'Not enough coins' ? 'Yeterli coin yok! 🪙' : 'Bir hata oluştu')
+    }
   }
 
   const handleGameScore = async (score: number) => {
@@ -351,7 +375,7 @@ export default function MiniGame() {
                       <p style={{ fontFamily: 'Lato', fontSize: '0.7rem', color: '#c9a84c', fontWeight: 700, marginTop: '2px' }}>{petData.name.toUpperCase()}</p>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                      {[{l:'🍽',v:petData.hunger,c:'#e8a0a0'},{l:'♡',v:petData.happiness,c:'#c9a84c'},{l:'⚡',v:petData.energy,c:'#90c890'}].map(b => (
+                      {[{ l: '🍽', v: petData.hunger, c: '#e8a0a0' }, { l: '♡', v: petData.happiness, c: '#c9a84c' }, { l: '⚡', v: petData.energy, c: '#90c890' }].map(b => (
                         <div key={b.l}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
                             <span style={{ fontFamily: 'Lato', fontSize: '0.6rem', color: '#a07070' }}>{b.l}</span>
@@ -385,6 +409,9 @@ export default function MiniGame() {
           {tab === 'tasks' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <p style={{ fontFamily: 'Lato', fontSize: '0.75rem', color: '#a07070', textAlign: 'center' }}>Günlük görevler her gün sıfırlanır 🌸</p>
+              {dailyTasks.length === 0 && (
+                <p style={{ fontFamily: 'Lato', fontSize: '0.85rem', color: '#c9a0a0', textAlign: 'center', marginTop: '20px' }}>Yükleniyor... 🌸</p>
+              )}
               {dailyTasks.map(task => (
                 <div key={task.id} style={{
                   background: task.completed ? 'rgba(144,200,144,0.1)' : 'rgba(253,232,232,0.4)',
@@ -397,9 +424,12 @@ export default function MiniGame() {
                     <p style={{ fontFamily: 'Lato', fontSize: '0.85rem', fontWeight: 700, color: '#5a3e3e', margin: 0 }}>{task.label}</p>
                     <p style={{ fontFamily: 'Lato', fontSize: '0.75rem', color: '#a07070', margin: '2px 0 0' }}>{task.desc}</p>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <p style={{ fontFamily: 'Lato', fontSize: '0.8rem', fontWeight: 700, color: '#c9a84c', margin: 0 }}>+{task.reward}🪙</p>
-                    {task.completed ? <span style={{ fontSize: '1rem' }}>✅</span> : <span style={{ fontFamily: 'Lato', fontSize: '0.65rem', color: '#c9a0a0' }}>bekliyor</span>}
+                    {task.completed
+                      ? <span style={{ fontSize: '1rem' }}>✅</span>
+                      : <span style={{ fontFamily: 'Lato', fontSize: '0.65rem', color: '#c9a0a0' }}>bekliyor</span>
+                    }
                   </div>
                 </div>
               ))}
@@ -451,7 +481,10 @@ export default function MiniGame() {
                 <span style={{ fontFamily: 'Lato', fontSize: '0.85rem', color: '#5a3e3e' }}>Coinlerim</span>
                 <span style={{ fontFamily: 'Lato', fontSize: '1rem', fontWeight: 700, color: '#c9a84c' }}>🪙 {coins}</span>
               </div>
-              {[{ title: 'YİYECEKLER', items: SHOP_FOODS, type: 'foods' as const }, { title: 'OYUNCAKLAR', items: SHOP_GAMES, type: 'games' as const }].map(section => (
+              {[
+                { title: 'YİYECEKLER', items: SHOP_FOODS, type: 'foods' as const },
+                { title: 'OYUNCAKLAR', items: SHOP_GAMES, type: 'games' as const },
+              ].map(section => (
                 <div key={section.title}>
                   <p style={{ fontFamily: 'Lato', fontSize: '0.7rem', color: '#c9a84c', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '8px' }}>{section.title}</p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
