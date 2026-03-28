@@ -68,7 +68,13 @@ export default function MiniGame() {
   const feedBothRef = useRef({ koala: false, frog: false })
   const dailyTasksRef = useRef<Task[]>([])
 
-  useEffect(() => { dailyTasksRef.current = dailyTasks }, [dailyTasks])
+  useEffect(() => {
+    dailyTasksRef.current = dailyTasks
+    // Mutluluk zaten yüksekse görevi tamamla
+    if (koala.happiness >= 80 && frog.happiness >= 80) {
+      completeTask('keep_happy')
+    }
+  }, [dailyTasks])
 
   useEffect(() => {
     fetch('/api/pets').then(r => r.json()).then(data => {
@@ -85,6 +91,23 @@ export default function MiniGame() {
           ? Object.fromEntries(inv.games.map((g: string) => [g, 1]))
           : inv.games
         setInventory({ foods, games })
+        setGamePlayed(data.gamePlayed || false)
+        // Mutluluk kontrolü için kısa bekle
+        setTimeout(() => {
+          if (data.koala?.happiness >= 80 && data.frog?.happiness >= 80) {
+            const tasks = data.dailyTasks || []
+            const task = tasks.find((t: Task) => t.id === 'keep_happy')
+            if (task && !task.completed) {
+              fetch('/api/pets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'complete_task', taskId: 'keep_happy' }),
+              }).then(r => r.json()).then(d => {
+                if (d.ok) { setCoins(d.coins); setDailyTasks(d.tasks) }
+              })
+            }
+          }
+        }, 500)
       }
       if (data.dailyTasks) setDailyTasks(data.dailyTasks)
       setGamePlayed(data.gamePlayed || false)
