@@ -46,6 +46,7 @@ function Bar({ value, color }: { value: number; color: string }) {
 }
 
 type Tab = 'pets' | 'tasks' | 'games' | 'shop'
+type Inventory = { foods: Record<string, number>; games: Record<string, number> }
 
 export default function MiniGame() {
   const [open, setOpen] = useState(false)
@@ -58,7 +59,7 @@ export default function MiniGame() {
   const [particles, setParticles] = useState<{ id: number; x: number; y: number; emoji: string }[]>([])
   const [particleId, setParticleId] = useState(0)
   const [coins, setCoins] = useState(30)
-  const [inventory, setInventory] = useState<{ foods: string[]; games: string[] }>({ foods: ['🍎', '🥕'], games: ['🎾'] })
+  const [inventory, setInventory] = useState<Inventory>({ foods: { '🍎': 2, '🥕': 1 }, games: { '🎾': 1 } })
   const [dailyTasks, setDailyTasks] = useState<{ id: string; label: string; desc: string; reward: number; icon: string; completed: boolean }[]>([])
   const [activeGame, setActiveGame] = useState<string | null>(null)
   const [gamePlayed, setGamePlayed] = useState(false)
@@ -124,19 +125,37 @@ export default function MiniGame() {
     if (data.ok) { setCoins(data.coins); setDailyTasks(data.tasks); showMessage(`+${task.reward} coin kazandın! 🪙`) }
   }, [dailyTasks])
 
-  const feed = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
-    if (!inventory.foods.includes(selectedFood)) { showMessage('Bu yiyeceğe sahip değilsin! 🛒'); return }
+  const feed = async (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
+    const stock = inventory.foods[selectedFood] || 0
+    if (stock <= 0) { showMessage('Stok bitti! Mağazadan satın al 🛒'); return }
+    const res = await fetch('/api/pets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'use_item', item: selectedFood, itemType: 'foods' }),
+    })
+    const data = await res.json()
+    if (!data.ok) { showMessage('Stok bitti! 🛒'); return }
+    setInventory(data.inventory)
     addParticle(selectedFood, e.clientX, e.clientY)
     animatePet(setPet, 'bounce')
     setPet(p => ({ ...p, hunger: Math.min(100, p.hunger + 20), happiness: Math.min(100, p.happiness + 5), energy: Math.min(100, p.energy + 10) }))
     showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
-    if (pet.name === 'Koala') feedBothRef.current.koala = true
+    if (pet.name === 'Gak Gak') feedBothRef.current.koala = true
     else feedBothRef.current.frog = true
     if (feedBothRef.current.koala && feedBothRef.current.frog) completeTask('feed_both')
   }
 
-  const play = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
-    if (!inventory.games.includes(selectedGame)) { showMessage('Bu oyuncağa sahip değilsin! 🛒'); return }
+  const play = async (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
+    const stock = inventory.games[selectedGame] || 0
+    if (stock <= 0) { showMessage('Stok bitti! Mağazadan satın al 🛒'); return }
+    const res = await fetch('/api/pets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'use_item', item: selectedGame, itemType: 'games' }),
+    })
+    const data = await res.json()
+    if (!data.ok) { showMessage('Stok bitti! 🛒'); return }
+    setInventory(data.inventory)
     addParticle(selectedGame, e.clientX, e.clientY)
     animatePet(setPet, 'spin')
     setPet(p => ({ ...p, happiness: Math.min(100, p.happiness + 25), energy: Math.max(0, p.energy - 15), hunger: Math.max(0, p.hunger - 10) }))
@@ -148,7 +167,7 @@ export default function MiniGame() {
     animatePet(setPet, 'wiggle')
     setPet(p => ({ ...p, happiness: Math.min(100, p.happiness + 15), energy: Math.min(100, p.energy + 5) }))
     showMessage(`${pet.name} okşandı! 💕`)
-    if (pet.name === 'Koala') petBothRef.current.koala = true
+    if (pet.name === 'Gak Gak') petBothRef.current.koala = true
     else petBothRef.current.frog = true
     if (petBothRef.current.koala && petBothRef.current.frog) completeTask('pet_both')
   }
@@ -166,8 +185,8 @@ export default function MiniGame() {
       body: JSON.stringify({ action: 'buy_item', item: emoji }),
     })
     const data = await res.json()
-    if (data.ok) { setCoins(data.coins); setInventory(data.inventory); showMessage(`${emoji} satın alındı! 🛒`) }
-    else showMessage(data.error === 'Not enough coins' ? 'Yeterli coin yok! 🪙' : data.error === 'Already owned' ? 'Zaten sahipsin!' : 'Bir hata oluştu')
+    if (data.ok) { setCoins(data.coins); setInventory(data.inventory); showMessage(`${emoji} x3 satın alındı! 🛒`) }
+    else showMessage(data.error === 'Not enough coins' ? 'Yeterli coin yok! 🪙' : 'Bir hata oluştu')
   }
 
   const handleGameScore = async (score: number) => {
@@ -295,22 +314,30 @@ export default function MiniGame() {
           {tab === 'pets' && (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                {[{ title: 'YİYECEK', items: inventory.foods, selected: selectedFood, onSelect: setSelectedFood },
-                  { title: 'OYUNCAK', items: inventory.games, selected: selectedGame, onSelect: setSelectedGame }].map(col => (
+                {[
+                  { title: 'YİYECEK', items: inventory.foods, selected: selectedFood, onSelect: setSelectedFood },
+                  { title: 'OYUNCAK', items: inventory.games, selected: selectedGame, onSelect: setSelectedGame },
+                ].map(col => (
                   <div key={col.title} style={{ background: 'rgba(253,232,232,0.4)', borderRadius: '12px', padding: '10px' }}>
                     <p style={{ fontFamily: 'Lato', fontSize: '0.65rem', color: '#c9a84c', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '6px' }}>{col.title}</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                      {col.items.map(f => (
-                        <button key={f} onClick={() => col.onSelect(f)} style={{
-                          fontSize: '1.1rem', padding: '3px', borderRadius: '6px', border: 'none', cursor: 'pointer',
-                          background: col.selected === f ? 'rgba(201,168,76,0.2)' : 'transparent',
-                          outline: col.selected === f ? '1.5px solid #c9a84c' : 'none',
-                        }}>{f}</button>
+                      {Object.entries(col.items).map(([emoji, stock]) => (
+                        <button key={emoji} onClick={() => col.onSelect(emoji)} style={{
+                          padding: '3px 4px', borderRadius: '6px', border: 'none', cursor: 'pointer',
+                          background: col.selected === emoji ? 'rgba(201,168,76,0.2)' : 'transparent',
+                          outline: col.selected === emoji ? '1.5px solid #c9a84c' : 'none',
+                          opacity: stock <= 0 ? 0.35 : 1,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        }}>
+                          <span style={{ fontSize: '1.1rem' }}>{emoji}</span>
+                          <span style={{ fontSize: '0.5rem', color: stock <= 0 ? '#e8a0a0' : '#c9a84c', fontFamily: 'Lato', fontWeight: 700, lineHeight: 1 }}>x{stock}</span>
+                        </button>
                       ))}
                     </div>
                   </div>
                 ))}
               </div>
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 {[{ petData: koala, setPet: setKoala }, { petData: frog, setPet: setFrog }].map(({ petData, setPet }) => (
                   <div key={petData.name} style={{ flex: 1, background: 'rgba(253,246,236,0.8)', borderRadius: '16px', border: '1px solid rgba(201,168,76,0.2)', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -382,7 +409,11 @@ export default function MiniGame() {
           {/* GAMES */}
           {tab === 'games' && !activeGame && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={{ background: gamePlayed ? 'rgba(144,200,144,0.1)' : 'rgba(201,168,76,0.08)', borderRadius: '12px', padding: '10px 14px', textAlign: 'center', border: `1px solid ${gamePlayed ? 'rgba(144,200,144,0.3)' : 'rgba(201,168,76,0.2)'}` }}>
+              <div style={{
+                background: gamePlayed ? 'rgba(144,200,144,0.1)' : 'rgba(201,168,76,0.08)',
+                borderRadius: '12px', padding: '10px 14px', textAlign: 'center',
+                border: `1px solid ${gamePlayed ? 'rgba(144,200,144,0.3)' : 'rgba(201,168,76,0.2)'}`,
+              }}>
                 {gamePlayed
                   ? <p style={{ fontFamily: 'Lato', fontSize: '0.8rem', color: '#90c890', fontWeight: 700 }}>✅ Bugünkü oyun hakkını kullandın!</p>
                   : <p style={{ fontFamily: 'Lato', fontSize: '0.8rem', color: '#c9a84c', fontWeight: 700 }}>🎮 Bugün 1 oyun hakkın var! Coin kazan 🪙</p>
@@ -392,7 +423,8 @@ export default function MiniGame() {
                 <button key={game.id} onClick={() => !gamePlayed && setActiveGame(game.id)} style={{
                   background: gamePlayed ? 'rgba(0,0,0,0.03)' : 'rgba(253,232,232,0.4)',
                   borderRadius: '16px', padding: '16px',
-                  border: '1px solid rgba(201,168,76,0.2)', cursor: gamePlayed ? 'not-allowed' : 'pointer',
+                  border: '1px solid rgba(201,168,76,0.2)',
+                  cursor: gamePlayed ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', gap: '12px', textAlign: 'left',
                   opacity: gamePlayed ? 0.5 : 1,
                 }}>
@@ -419,25 +451,23 @@ export default function MiniGame() {
                 <span style={{ fontFamily: 'Lato', fontSize: '0.85rem', color: '#5a3e3e' }}>Coinlerim</span>
                 <span style={{ fontFamily: 'Lato', fontSize: '1rem', fontWeight: 700, color: '#c9a84c' }}>🪙 {coins}</span>
               </div>
-              {[{ title: 'YİYECEKLER', items: SHOP_FOODS, type: 'foods' }, { title: 'OYUNCAKLAR', items: SHOP_GAMES, type: 'games' }].map(section => (
+              {[{ title: 'YİYECEKLER', items: SHOP_FOODS, type: 'foods' as const }, { title: 'OYUNCAKLAR', items: SHOP_GAMES, type: 'games' as const }].map(section => (
                 <div key={section.title}>
                   <p style={{ fontFamily: 'Lato', fontSize: '0.7rem', color: '#c9a84c', fontWeight: 700, letterSpacing: '0.1em', marginBottom: '8px' }}>{section.title}</p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
                     {section.items.map(item => {
-                      const owned = inventory[section.type as 'foods' | 'games']?.includes(item.emoji)
+                      const stock = inventory[section.type]?.[item.emoji] || 0
                       return (
-                        <button key={item.emoji} onClick={() => !owned && buyItem(item.emoji)} style={{
-                          background: owned ? 'rgba(144,200,144,0.15)' : 'rgba(253,232,232,0.5)',
-                          border: `1px solid ${owned ? 'rgba(144,200,144,0.4)' : 'rgba(201,168,76,0.2)'}`,
-                          borderRadius: '12px', padding: '10px 6px', cursor: owned ? 'default' : 'pointer',
+                        <button key={item.emoji} onClick={() => buyItem(item.emoji)} style={{
+                          background: stock > 0 ? 'rgba(144,200,144,0.1)' : 'rgba(253,232,232,0.5)',
+                          border: `1px solid ${stock > 0 ? 'rgba(144,200,144,0.3)' : 'rgba(201,168,76,0.2)'}`,
+                          borderRadius: '12px', padding: '10px 6px', cursor: 'pointer',
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-                          opacity: !owned && coins < item.price ? 0.5 : 1,
+                          opacity: coins < item.price ? 0.5 : 1,
                         }}>
                           <span style={{ fontSize: '1.6rem' }}>{item.emoji}</span>
-                          {owned
-                            ? <span style={{ fontFamily: 'Lato', fontSize: '0.65rem', color: '#90c890', fontWeight: 700 }}>Sahipsin ✓</span>
-                            : <span style={{ fontFamily: 'Lato', fontSize: '0.7rem', color: '#c9a84c', fontWeight: 700 }}>🪙 {item.price}</span>
-                          }
+                          {stock > 0 && <span style={{ fontFamily: 'Lato', fontSize: '0.6rem', color: '#90c890', fontWeight: 700 }}>x{stock}</span>}
+                          <span style={{ fontFamily: 'Lato', fontSize: '0.7rem', color: '#c9a84c', fontWeight: 700 }}>🪙{item.price} → +3</span>
                         </button>
                       )
                     })}
@@ -446,6 +476,7 @@ export default function MiniGame() {
               ))}
             </div>
           )}
+
         </div>
       </div>
     </>
