@@ -156,7 +156,8 @@ export default function MiniGame() {
       const otherHappiness = isKoala ? frog.happiness : koala.happiness
       if (updated.happiness >= 80 && otherHappiness >= 80) setTimeout(() => completeTask('keep_happy'), 0)
       return updated
-    })    showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
+    })
+    showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
     // Görev takibi
     if (pet.name === 'Gak Gak') feedBothRef.current.koala = true
     else feedBothRef.current.frog = true
