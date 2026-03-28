@@ -20,14 +20,14 @@ async function initPets() {
       frog_energy FLOAT DEFAULT 85,
       last_seen BIGINT DEFAULT 0,
       coins INTEGER DEFAULT 30,
-      inventory JSONB DEFAULT '{"foods":["🍎","🥕"],"games":["🎾"]}',
+      inventory JSONB DEFAULT '{"foods":{"🍎":2,"🥕":1},"games":{"🎾":1}}',
       daily_tasks JSONB DEFAULT '[]',
       last_task_reset TEXT DEFAULT '',
       game_played_date TEXT DEFAULT ''
     )
   `
   await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS coins INTEGER DEFAULT 30`
-  await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS inventory JSONB DEFAULT '{"foods":["🍎","🥕"],"games":["🎾"]}'`
+  await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS inventory JSONB DEFAULT '{"foods":{"🍎":2,"🥕":1},"games":{"🎾":1}}'`
   await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS daily_tasks JSONB DEFAULT '[]'`
   await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS last_task_reset TEXT DEFAULT ''`
   await sql`ALTER TABLE pet_stats ADD COLUMN IF NOT EXISTS game_played_date TEXT DEFAULT ''`
@@ -112,8 +112,19 @@ export async function POST(req: Request) {
     await sql`UPDATE pet_stats SET coins = ${finalCoins}, game_played_date = ${getTodayStr()}, daily_tasks = ${JSON.stringify(tasks)} WHERE id = 'main'`
     return NextResponse.json({ ok: true, coins: finalCoins, bonus, tasks })
   }
+    if (body.action === 'use_item') {
+    const rows = await sql`SELECT inventory FROM pet_stats WHERE id = 'main'`
+    const r = rows[0]
+    const inv = r.inventory as Record<string, Record<string, number>>
+    const { item, itemType } = body
+    const stock = inv[itemType]?.[item] || 0
+    if (stock <= 0) return NextResponse.json({ ok: false, error: 'Out of stock' })
+    inv[itemType] = { ...inv[itemType], [item]: stock - 1 }
+    await sql`UPDATE pet_stats SET inventory = ${JSON.stringify(inv)} WHERE id = 'main'`
+    return NextResponse.json({ ok: true, inventory: inv })
+  }
 
-  if (body.action === 'buy_item') {
+    if (body.action === 'buy_item') {
     const rows = await sql`SELECT coins, inventory FROM pet_stats WHERE id = 'main'`
     const r = rows[0]
     const SHOP: Record<string, {price: number, type: string}> = {
@@ -126,9 +137,9 @@ export async function POST(req: Request) {
     if (!item) return NextResponse.json({ ok: false, error: 'Item not found' })
     const coins = r.coins as number
     if (coins < item.price) return NextResponse.json({ ok: false, error: 'Not enough coins' })
-    const inv = r.inventory as Record<string, string[]>
-    if (inv[item.type]?.includes(body.item)) return NextResponse.json({ ok: false, error: 'Already owned' })
-    inv[item.type] = [...(inv[item.type] || []), body.item]
+    const inv = r.inventory as Record<string, Record<string, number>>
+    const currentStock = inv[item.type]?.[body.item] || 0
+    inv[item.type] = { ...inv[item.type], [body.item]: currentStock + 3 }
     const newCoins = coins - item.price
     await sql`UPDATE pet_stats SET inventory = ${JSON.stringify(inv)}, coins = ${newCoins} WHERE id = 'main'`
     return NextResponse.json({ ok: true, coins: newCoins, inventory: inv })
