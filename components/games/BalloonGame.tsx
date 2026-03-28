@@ -76,8 +76,8 @@ export default function BalloonGame({ onClose, onScore }: Props) {
         {balloons.filter(b => !b.popped).map(b => (
           <button key={b.id} onClick={() => pop(b.id)} style={{
             position: 'absolute', left: `${b.x}%`, top: `${b.y}%`,
-            fontSize: '2rem', background: 'transparent', border: 'none',
-            cursor: 'pointer', transform: 'translateX(-50%)', padding: 0, lineHeight: 1,
+            fontSize: '2.8rem', background: 'transparent', border: 'none',
+            cursor: 'pointer', transform: 'translateX(-50%)', padding: '8px', lineHeight: 1,
           }}>{b.emoji}</button>
         ))}
         {finished && (
