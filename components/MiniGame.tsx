@@ -150,8 +150,13 @@ export default function MiniGame() {
     setInventory(prev => ({ ...prev, foods: { ...prev.foods, [selectedFood]: stock - 1 } }))
     addParticle(selectedFood, e.clientX, e.clientY)
     animatePet(setPet, 'bounce')
-    setPet(p => ({ ...p, hunger: Math.min(100, p.hunger + 20), happiness: Math.min(100, p.happiness + 5), energy: Math.min(100, p.energy + 10) }))
-    showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
+    setPet(p => {
+      const updated = { ...p, hunger: Math.min(100, p.hunger + 20), happiness: Math.min(100, p.happiness + 5), energy: Math.min(100, p.energy + 10) }
+      const isKoala = pet.name === 'Gak Gak'
+      const otherHappiness = isKoala ? frog.happiness : koala.happiness
+      if (updated.happiness >= 80 && otherHappiness >= 80) setTimeout(() => completeTask('keep_happy'), 0)
+      return updated
+    })    showMessage(`${pet.name} ${selectedFood} yedi! ✨`)
     // Görev takibi
     if (pet.name === 'Gak Gak') feedBothRef.current.koala = true
     else feedBothRef.current.frog = true
@@ -184,13 +189,22 @@ export default function MiniGame() {
   const petAction = (setPet: typeof setKoala, pet: Pet, e: React.MouseEvent) => {
     addParticle('💕', e.clientX, e.clientY)
     animatePet(setPet, 'wiggle')
-    setPet(p => ({ ...p, happiness: Math.min(100, p.happiness + 15), energy: Math.min(100, p.energy + 5) }))
+    setPet(p => {
+      const updated = { ...p, happiness: Math.min(100, p.happiness + 15), energy: Math.min(100, p.energy + 5) }
+      const isKoala = pet.name === 'Gak Gak'
+      const otherHappiness = isKoala ? frog.happiness : koala.happiness
+      if (updated.happiness >= 80 && otherHappiness >= 80) setTimeout(() => completeTask('keep_happy'), 0)
+      return updated
+    })
     showMessage(`${pet.name} okşandı! 💕`)
     if (pet.name === 'Gak Gak') petBothRef.current.koala = true
     else petBothRef.current.frog = true
     if (petBothRef.current.koala && petBothRef.current.frog) completeTask('pet_both')
   }
-
+  const checkHappyTask = useCallback((k: Pet, f: Pet) => {
+    if (k.happiness >= 80 && f.happiness >= 80) completeTask('keep_happy')
+  }, [completeTask])
+  
   const sleepPet = (setPet: typeof setKoala, pet: Pet) => {
     animatePet(setPet, 'bounce')
     setPet(p => ({ ...p, energy: Math.min(100, p.energy + 40), happiness: Math.min(100, p.happiness + 10) }))
@@ -214,19 +228,19 @@ export default function MiniGame() {
   }
 
   const handleGameScore = async (score: number) => {
-    const res = await fetch('/api/pets', {
+    const bonus = Math.max(5, Math.min(Math.floor(score * 2), 30))
+    // Önce UI güncelle
+    setCoins(prev => prev + bonus)
+    setGamePlayed(true)
+    setDailyTasks(prev => prev.map(t => t.id === 'play_game' ? { ...t, completed: true } : t))
+    showMessage(`Tebrikler! +${bonus} coin kazandın! 🪙`)
+    setActiveGame(null)
+    // Arka planda API
+    fetch('/api/pets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'finish_game', score }),
-    })
-    const data = await res.json()
-    if (data.ok) {
-      setCoins(data.coins)
-      setDailyTasks(data.tasks)
-      setGamePlayed(true)
-      if (data.bonus > 0) showMessage(`+${data.bonus} coin kazandın! 🪙`)
-    }
-    setActiveGame(null)
+    }).catch(() => {})
   }
 
   const needsAttention = koala.hunger < 30 || koala.happiness < 30 || frog.hunger < 30 || frog.happiness < 30
