@@ -14,7 +14,7 @@ export default function FlappyGame({ onClose, onScore }: Props) {
     const s = stateRef.current
     if (!s.alive) return
     s.started = true
-    s.bird.vy = -7
+    s.bird.vy = -5.5
   }
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export default function FlappyGame({ onClose, onScore }: Props) {
     const loop = () => {
       ctx.fillStyle = '#fdf6ec'; ctx.fillRect(0, 0, W, H)
       if (s.started && s.alive) {
-        s.bird.vy += 0.4; s.bird.y += s.bird.vy; s.frame++
+        s.bird.vy += 0.25; s.bird.y += s.bird.vy; s.frame++
         if (s.frame % 90 === 0) s.pipes.push({ x: W, gap: 80 + Math.random() * (H - 250), scored: false })
         s.pipes.forEach(p => { p.x -= 3 })
         s.pipes = s.pipes.filter(p => p.x > -60)
